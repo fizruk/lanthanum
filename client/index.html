@@ -1,0 +1,687 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Bunny</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.3/css/bootstrap-select.min.css">
+
+<style>
+body {
+  margin-top: 70px;
+  background-color: #fdfdfd;
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+.spinner {
+  margin: auto;
+  text-align: center;
+}
+
+.spinner > div {
+  margin: 0 3px;
+  width: 10px;
+  height: 10px;
+  background-color: #333;
+
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+  animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+}
+
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+
+@-webkit-keyframes sk-bouncedelay {
+  0%, 80%, 100% { -webkit-transform: scale(0) }
+  40% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bouncedelay {
+  0%, 80%, 100% { 
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  } 40% { 
+    -webkit-transform: scale(1.0);
+    transform: scale(1.0);
+  }
+}
+</style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.3/js/bootstrap-select.min.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+
+    <div id="navbar">
+    </div>
+
+    <div id="container" class="container"></div>
+
+    <script type="text/jsx">
+
+var NavBar = React.createClass({
+  render: function() {
+    return (
+      <nav className="navbar navbar-default navbar-fixed-top">
+        <div className="container">
+          <div className="navbar-header">
+            <button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span className="sr-only">Toggle navigation</span>
+              <span className="icon-bar"></span>
+              <span className="icon-bar"></span>
+              <span className="icon-bar"></span>
+            </button>
+            <a className="navbar-brand" href="#">Bunny</a>
+          </div>
+          <div id="navbar" className="navbar-collapse collapse">
+            <ul className="nav navbar-nav">
+            </ul>
+            <ul className="nav navbar-nav navbar-right">
+            </ul>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+});
+
+
+var Spinner = React.createClass({
+  render: function() {
+    return (
+      <div className="spinner col-xs-12">
+        <div className="bounce1"></div>
+        <div className="bounce2"></div>
+        <div className="bounce3"></div>
+      </div>
+    );
+  }
+});
+
+var SubmitButton = React.createClass({
+  getInitialState: function() {
+    return {loading: false};
+  },
+  render: function() {
+    if (this.state.loading) {
+      return (
+        <button className="btn btn-primary btn-sm disabled" disabled>
+          <Spinner />
+        </button>
+      );
+    } else {
+      return (
+        <button type="submit" className="btn btn-primary btn-sm">
+          <i className="fa fa-send"></i> Отправить решение
+        </button>
+      );
+    }
+  }
+});
+
+var AceEditor = React.createClass({
+  displayName: 'ReactAce',
+  
+  propTypes: {
+    mode  : React.PropTypes.string,
+    theme : React.PropTypes.string,
+    name : React.PropTypes.string,
+    height : React.PropTypes.string,
+    fontSize : React.PropTypes.number,
+    showGutter : React.PropTypes.bool,
+    onChange: React.PropTypes.func,
+    value: React.PropTypes.string,
+    onLoad: React.PropTypes.func,
+    maxLines : React.PropTypes.number,
+    readOnly : React.PropTypes.bool,
+    highlightActiveLine : React.PropTypes.bool,
+    showPrintMargin : React.PropTypes.bool,
+    cursorStart: React.PropTypes.number,
+    editorProps: React.PropTypes.object,
+    keyboard: React.PropTypes.string
+  },
+  getDefaultProps: function() {
+    return {
+      name   : 'brace-editor',
+      mode   : '',
+      theme  : '',
+      height : '500px',
+      value  : '',
+      fontSize   : 12,
+      showGutter : true,
+      onChange   : null,
+      onLoad     : null,
+      maxLines   : null,
+      readOnly   : false,
+      highlightActiveLine : true,
+      showPrintMargin     : true,
+      cursorStart: 1,
+      editorProps : {},
+      keyboard: "ace"
+    };
+  },
+  onChange: function() {
+    var value = this.editor.getValue();
+    this.props.value = value;
+    if (this.props.onChange) {
+      this.props.onChange(value);
+    }
+  },
+  componentDidMount: function() {
+    this.editor = ace.edit(this.props.name);
+
+    var editorProps = Object.getOwnPropertyNames(this.props.editorProps)
+    for (var i = 0; i < editorProps.length; i++) {
+      this.editor[editorProps[i]] = this.props.editorProps[editorProps[i]]
+    }
+
+    this.editor.getSession().setMode('ace/mode/'+this.props.mode);
+    this.editor.setKeyboardHandler("ace/keyboard/"+this.props.keyboard);
+    this.editor.setTheme('ace/theme/'+this.props.theme);
+    this.editor.setFontSize(this.props.fontSize);
+    this.editor.on('change', this.onChange);
+    this.editor.setValue(this.props.value, this.props.cursorStart);
+    this.editor.renderer.setShowGutter(this.props.showGutter);
+    this.editor.setOption('maxLines', this.props.maxLines);
+    this.editor.setOption('readOnly', this.props.readOnly);
+    this.editor.setOption('highlightActiveLine', this.props.highlightActiveLine);
+    this.editor.setShowPrintMargin(this.props.setShowPrintMargin);
+
+    if (this.props.onLoad) {
+      this.props.onLoad(this.editor);
+    }
+  },
+  
+  componentWillUnmount: function() {
+    this.editor = null;
+  },
+  
+  componentWillReceiveProps: function(nextProps) {
+    this.editor = ace.edit(nextProps.name);
+    this.editor.getSession().setUseWorker(false);
+    this.editor.setKeyboardHandler("ace/keyboard/"+this.props.keyboard);
+    this.editor.getSession().setMode('ace/mode/'+nextProps.mode);
+    this.editor.setTheme('ace/theme/'+nextProps.theme);
+    this.editor.setFontSize(nextProps.fontSize);
+    this.editor.setOption('maxLines', nextProps.maxLines);
+    this.editor.setOption('readOnly', nextProps.readOnly);
+    this.editor.setOption('highlightActiveLine', nextProps.highlightActiveLine);
+    this.editor.setShowPrintMargin(nextProps.setShowPrintMargin);
+    if (this.editor.getValue() !== nextProps.value) {
+      this.editor.setValue(nextProps.value, nextProps.cursorStart);
+    }
+    this.editor.renderer.setShowGutter(nextProps.showGutter);
+    if (nextProps.onLoad) {
+      nextProps.onLoad(this.editor);
+    }
+  },
+
+  render: function() {
+    var divStyle = {
+      height: this.props.height
+    };
+    return (<div id={this.props.name} onChange={this.onChange} style={divStyle}></div>);
+  }
+});
+
+var SubmissionStatus = React.createClass({
+  render: function() {
+    var statuses =
+      { "Accepted":
+          { label: "label-success"
+          , text:  "принято" }
+      , "WrongAnswer":
+          { label: "label-danger"
+          , text:  "неверный ответ" }
+      , "TimeLimitExceeded":
+          { label: "label-danger"
+          , text:  "превышен лимит времени" }
+      , "RunningTests":
+          { label: "label-info"
+          , text:  "запуск тестов" }
+      , "CompilationError":
+          { label: "label-default"
+          , text:  "ошибка компиляции" }
+      , "Compiling":
+          { label: "label-info"
+          , text:  "компиляция" }
+      , "Submitted":
+          { label: "label-default"
+          , text: "отправлено" }
+      };
+
+    var status = statuses[this.props.status];
+
+    if (!status) { status = { label: "label-default", text: this.props.status }; }
+
+    return (
+      <span className={"label " + status.label}>{status.text}</span>
+    );
+  }
+});
+
+var Submission = React.createClass({
+  render: function() {
+    return (
+      <tr>
+        <td className="text-right">#{this.props.number}</td>
+        <td className="text-center"><SubmissionStatus status={this.props.status} /></td>
+        <td className="text-center"><span className="text-help"><small>только что</small></span></td>
+      </tr>
+    );
+  }
+});
+
+var SubmissionList = React.createClass({
+  getInitialState: function() {
+    return {data: []};
+  },
+  loadSubmissionsFromServer: function() {
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        this.setState({data: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+  componentDidMount: function() {
+    this.loadSubmissionsFromServer();
+    setInterval(this.loadSubmissionsFromServer, this.props.pollInterval);
+  },
+  render: function() {
+    var submissionRows = this.state.data.map(function (submission) {
+      return (
+        <Submission number={submission.id} status={submission.value.status} />
+      );
+    });
+    return (
+      <div className="panel panel-default">
+        <div className="panel-heading">Отправленные решения</div>
+
+        <table className="table table-condensed table-hover">
+          <tbody>
+            {submissionRows}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+});
+
+var SolutionUploadForm = React.createClass({
+  handleChange: function(e) {
+    var filepath = $(React.findDOMNode(this.refs.file)).val();
+    var filename = filepath.split('\\').pop();
+    $(React.findDOMNode(this.refs.filename)).text(filename);
+    $(React.findDOMNode(this.refs.selectForm)).addClass("hidden");
+    $(React.findDOMNode(this.refs.submitForm)).removeClass("hidden");
+  },
+  handleRemoveFile: function(e) {
+    $(React.findDOMNode(this.refs.form))[0].reset();
+    $(React.findDOMNode(this.refs.selectForm)).removeClass("hidden");
+    $(React.findDOMNode(this.refs.submitForm)).addClass("hidden");
+  },
+  handleSubmit: function(e) {
+    e.preventDefault();
+    var formData = new FormData($(React.findDOMNode(this.refs.form))[0]);
+
+    this.refs.submitBtn.setState({loading: true});
+
+    $.ajax({
+      url: this.props.url,
+      type: 'POST',
+      contentType: false,
+      processData: false,
+      data: formData,
+      success: function(data) {
+        this.refs.submitBtn.setState({loading: false});
+        if (this.props.onSolutionSubmit) {
+          this.props.onSolutionSubmit(data);
+        }
+      }.bind(this),
+      error: function(xhr, status, err) {
+        this.refs.submitBtn.setState({loading: false});
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+
+    this.handleRemoveFile();
+  },
+  render: function() {
+    return (
+      <form role="form" onSubmit={this.handleSubmit} ref="form">
+        <div className="form-group" ref="selectForm">
+          <span className="btn btn-default btn-file btn-sm">
+            <i className="fa fa-upload"></i> Загрузить решение
+            <input type="file" id="inputUploadSolution" onChange={this.handleChange} ref="file" />
+          </span>
+          <small className="help-block">Решение должно быть в файле с расширением <code>.hs</code>.</small>
+        </div>
+        <div className="form-group hidden" ref="submitForm">
+          <SubmitButton ref="submitBtn" />
+          &nbsp;
+          <small>
+            <button type="button" className="close" onClick={this.handleRemoveFile}><span>&times;</span></button>
+            <samp ref="filename"></samp>
+          </small>
+        </div>
+      </form>
+    );
+  }
+});
+
+var SolutionEditor = React.createClass({
+  getInitialState: function() {
+    return {
+      code:     this.props.value,
+      snippet:  this.props.value,
+      mode:     "haskell",
+      theme:    "solarized_light",
+      lightThemes: [
+        { id:   "chrome",
+          name: "Chrome" },
+        { id:   "clouds",
+          name: "Clouds" },
+        { id:   "crimson_editor",
+          name: "Crimson Editor" },
+        { id:   "dawn",
+          name: "Dawn" },
+        { id:   "dreamweaver",
+          name: "Dreamweaver" },
+        { id:   "eclipse",
+          name: "Eclipse" },
+        { id:   "github",
+          name: "GitHub" },
+        { id:   "iplastic",
+          name: "IPlastic" },
+        { id:   "solarized_light",
+          name: "Solarized Light" },
+        { id:   "textmate",
+          name: "TextMate" },
+        { id:   "tomorrow",
+          name: "Tomorrow" },
+        { id:   "xcode",
+          name: "XCode" },
+        { id:   "kuroir",
+          name: "Kuroir" },
+        { id:   "katzenmilch",
+          name: "KatzenMilch" },
+        { id:   "sqlserver",
+          name: "SQL Server" }
+      ],
+      darkThemes: [
+        { id:   "ambiance",
+          name: "Ambiance" },
+        { id:   "chaos",
+          name: "Chaos" },
+        { id:   "clouds_midnight",
+          name: "Clouds Midnight" },
+        { id:   "cobalt",
+          name: "Cobalt" },
+        { id:   "idle_fingers",
+          name: "Idle Fingers" },
+        { id:   "kr_theme",
+          name: "krTheme" },
+        { id:   "merbivore",
+          name: "Merbivore" },
+        { id:   "merbivore_soft",
+          name: "Merbivore Soft" },
+        { id:   "mono_industrial",
+          name: "Mono Industrial" },
+        { id:   "monokai",
+          name: "Monokai" },
+        { id:   "pastel_on_dark",
+          name: "Pastel on dark" },
+        { id:   "solarized_dark",
+          name: "Solarized Dark" },
+        { id:   "terminal",
+          name: "Terminal" },
+        { id:   "tomorrow_night",
+          name: "Tomorrow Night" },
+        { id:   "tomorrow_night_blue",
+          name: "Tomorrow Night Blue" },
+        { id:   "tomorrow_night_bright",
+          name: "Tomorrow Night Bright" },
+        { id:   "tomorrow_night_eighties",
+          name: "Tomorrow Night 80s" },
+        { id:   "twilight",
+          name: "Twilight" },
+        { id:   "vibrant_ink",
+          name: "Vibrant Ink" }
+      ],
+      keyboard: "ace",
+      keyboards: [
+        { id:   "ace",
+          name: "Normal"},
+        { id:   "vim",
+          name: "Vim"},
+        { id:   "emacs",
+          name: "Emacs"}
+      ]
+    };
+  },
+  handleSubmit: function(e) {
+    e.preventDefault();
+
+    this.refs.submitBtn.setState({loading: true});
+
+    var solution = this.refs.editor.props.value;
+
+    $.ajax({
+      url: this.props.url,
+      type: 'POST',
+      contentType: "application/json; charset=utf-8",
+      dataType: 'json',
+      data: JSON.stringify({code: solution}),
+      success: function(data) {
+        this.refs.submitBtn.setState({loading: false});
+        if (this.props.onSolutionSubmit) {
+          this.props.onSolutionSubmit(data);
+        }
+      }.bind(this),
+      error: function(xhr, status, err) {
+        this.refs.submitBtn.setState({loading: false});
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+
+    this.setState({code: solution});
+  },
+  resetCode: function(e) {
+    this.setState({code: this.state.snippet});
+  },
+  changeTheme: function(e) {
+    e.preventDefault();
+    this.setState({theme: React.findDOMNode(this.refs.themePicker).value});
+  },
+  changeKeyboard: function(e) {
+    e.preventDefault();
+    this.setState({keyboard: React.findDOMNode(this.refs.keyboardPicker).value});
+  },
+  render: function() {
+    var currentTheme = this.state.theme;
+    var lightThemeOptions = this.state.lightThemes.map(function(theme) {
+      return ( <option value={theme.id} selected={theme.id == currentTheme}>{theme.name}</option>);
+    });
+    var darkThemeOptions = this.state.darkThemes.map(function(theme) {
+      return ( <option value={theme.id} selected={theme.id == currentTheme}>{theme.name}</option>);
+    });
+
+    var currentKeyboard = this.state.keyboard;
+    var keyboardOptions = this.state.keyboards.map(function(keyboard) {
+      return (
+        <option value={keyboard.id} selected={keyboard.id == currentKeyboard}>{keyboard.name}</option>
+      );
+    });
+
+    return (
+      <form role="form" onSubmit={this.handleSubmit}>
+        <div className="panel panel-default">
+          <AceEditor
+            mode={this.state.mode}
+            theme={this.state.theme}
+            keyboard={this.state.keyboard}
+            name="editor"
+            height="300px"
+            value={this.state.code}
+            ref="editor"
+          />
+          <div className="panel-footer">
+            <div className="form-inline col-xs-7">
+              <div className="form-group">
+                <label>Тема:&nbsp;</label>
+                <select className="selectpicker show-tick" data-style="btn btn-default btn-sm" data-width="160px"
+                        onChange={this.changeTheme} ref="themePicker">
+                  <optgroup label="Светлые">
+                    {lightThemeOptions}
+                  </optgroup>
+                  <optgroup label="Тёмные">
+                    {darkThemeOptions}
+                  </optgroup>
+                </select>
+              </div>
+              &nbsp;
+              <div className="form-group">
+                <label>Режим:&nbsp;</label>
+                <select className="selectpicker show-tick" data-style="btn btn-default btn-sm" data-width="100px"
+                        onChange={this.changeKeyboard} ref="keyboardPicker">
+                  {keyboardOptions}
+                </select>
+              </div>
+            </div>
+
+            <div class="col-xs-5 text-right">
+              <a href="javascript:void(0);" className="btn btn-default btn-sm" onClick={this.resetCode}>
+                <i className="fa fa-refresh"></i> Сбросить
+              </a>
+              &nbsp;
+              <SubmitButton ref="submitBtn" />
+            </div>
+          </div>
+        </div>
+      </form>
+    );
+  }
+});
+
+var ProblemBox = React.createClass({
+  getInitialState: function() {
+    return {title: "", description: "", snippet: ""};
+  },
+  loadProblemFromServer: function() {
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        this.setState(data);
+        this.refs.editor.setState({snippet: data.snippet, code: data.snippet});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+  componentDidMount: function() {
+    this.loadProblemFromServer();
+  },
+  handleSolutionSubmit: function(submitId) {
+    this.refs.submissions.setState(function(s) {
+      s.data.unshift({id: submitId, value: {status: "Submitted"}});
+      return {data: s.data};
+    });
+  },
+  render: function() {
+    var rawMarkup = marked(this.state.description, {sanitize: true});
+    return (
+      <div className="problemBox">
+        <div className="row">
+          <div className="col-xs-8">
+            <div>
+            <h3>{this.state.title}</h3>
+            <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
+            </div>
+            <SolutionEditor
+              ref="editor"
+              value={this.state.snippet}
+              onSolutionSubmit={this.handleSolutionSubmit}
+              url={this.props.url + "/submit/raw"}
+            />
+          </div>
+
+          <div className="col-xs-4">
+            <SolutionUploadForm onSolutionSubmit={this.handleSolutionSubmit} url={this.props.url + "/submit/file"} />
+            <SubmissionList url={this.props.url + "/submit"} pollInterval={2000} ref="submissions" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+});
+
+React.render(<NavBar />,     document.getElementById('navbar'));
+React.render(
+  <ProblemBox url="http://localhost:8000/problem/1" />
+  , document.getElementById('container')
+);
+    </script>
+
+<script>
+$( document ).ready(function() {
+  $('.selectpicker').selectpicker();
+});
+</script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js" type="text/javascript" charset="utf-8"></script>
+  </body>
+</html>

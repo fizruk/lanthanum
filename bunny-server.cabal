@@ -1,0 +1,61 @@
+name:                bunny-server
+version:             0.1.0.0
+synopsis:            Initial project template from stack
+description:         Please see README.md
+homepage:            http://github.com/githubuser/bunny-server#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Nickolay Kudasov
+maintainer:          nickolay.kudasov@gmail.com
+copyright:           2010 Author Here
+category:            Web
+build-type:          Simple
+data-files:          client/*.html
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:
+    Bunny.API
+    Bunny.Utils
+    Bunny.Config
+    Bunny.Models
+    Bunny.Model.SubmitStatus
+  build-depends:       base >= 4.7 && < 5
+                     , servant ==0.4.*
+                     , servant-server
+                     , warp
+                     , aeson
+                     , transformers
+                     , mtl
+                     , monad-logger
+                     , either
+                     , wai
+                     , wai-extra
+                     , resourcet
+                     , bytestring
+                     , text
+                     , persistent
+                     , persistent-postgresql
+                     , persistent-template
+                     , process
+                     , temporary
+                     , path-pieces
+  default-language:    Haskell2010
+
+executable bunny-server-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  other-modules:
+    Paths_bunny_server
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , bunny-server
+                     , warp
+                     , persistent-postgresql
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/bunny-server
