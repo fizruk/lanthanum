@@ -26,10 +26,8 @@ import Control.Monad.Reader
 import Control.Monad.Trans.Resource
 import Data.ByteString.Lazy (ByteString)
 import Network.Wai
-import Network.Wai.Handler.Warp (run)
 import Network.Wai.Parse
 import Servant
-import Servant.Server.Internal
 import Database.Persist.Postgresql
 import Web.PathPieces
 
@@ -123,7 +121,7 @@ submitServer problemId = fileHandler :<|> rawHandler :<|> listHandler
     rawHandler Solution{..} = createSubmit problemId solutionCode
 
     fileHandler :: MultiPartData Tmp -> AppM SubmitId
-    fileHandler ([], [file@(_name, fileinfo)]) = do
+    fileHandler ([], [(_name, fileinfo)]) = do
       code <- liftIO $ Text.readFile (fileContent fileinfo)
       createSubmit problemId code
     fileHandler _ = throwError err400 -- Bad Request
@@ -143,27 +141,26 @@ runTestsFor Problem{..} submitId code = do
   cfg <- ask
   lift $ lift $ runReaderT runTests cfg
   where
-    timeout' :: Int -> SubmitStatus -> ReaderT Config IO a -> ReaderT Config IO (Maybe a)
-    timeout' n timeoutStatus f = do
+    timeout_ :: Int -> SubmitStatus -> ReaderT Config IO a -> ReaderT Config IO ()
+    timeout_ n timeoutStatus f = do
       e <- ask
       res <- lift $ timeout n (runReaderT f e)
       case res of
         Nothing -> do
           status timeoutStatus []
           liftIO exitFailure
-        _ -> return res
+        _ -> return ()
 
     status :: SubmitStatus -> [Update Submit] -> ReaderT Config IO ()
     status s updates = runDb $ update submitId ((SubmitStatus =. s) : updates)
 
     stage :: FilePath -> [String] -> SubmitStatus -> SubmitStatus -> ReaderT Config IO ()
     stage cmd args processingStatus failureStatus = do
-      liftIO $ threadDelay (3 * 10^6)
       status processingStatus []
-      (exitStatus, _stdout, stderr) <- liftIO $ readProcessWithExitCode cmd args ""
+      (exitStatus, _out, err) <- liftIO $ readProcessWithExitCode cmd args ""
       case exitStatus of
-        ExitFailure exitCode -> do
-          status failureStatus [SubmitLog =. Just (Text.pack stderr)]
+        ExitFailure _exitCode -> do
+          status failureStatus [SubmitLog =. Just (Text.pack err)]
           liftIO exitFailure
         ExitSuccess -> return ()
 
@@ -186,7 +183,7 @@ runTestsFor Problem{..} submitId code = do
           hClose hFile
 
         stage "stack" ["ghc", "--", "-c", tmpFile] SubmitCompiling SubmitCompilationError
-        timeout' (30 * 10^6) SubmitTimeLimitExceeded $ do
+        timeout_ (30 * 10^6) SubmitTimeLimitExceeded $ do
           stage "stack" ["exec", "doctest", tmpFile] SubmitRunningTests SubmitWrongAnswer
         status SubmitAccepted []
 

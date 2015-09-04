@@ -1,7 +1,5 @@
 module Lanthanum.Utils where
 
-import Control.Arrow (first)
-
 import Data.Aeson.TH
 import Data.Char
 import Data.List

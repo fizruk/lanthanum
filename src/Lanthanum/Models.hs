@@ -14,10 +14,9 @@ module Lanthanum.Models where
 
 import Data.Aeson.TH
 import Data.Text (Text)
-import GHC.Generics                (Generic)
-import Control.Monad.Reader        (ReaderT, asks, liftIO)
-import Database.Persist.Postgresql (SqlBackend(..), runMigration, 
-                                    runSqlPool)
+import Control.Monad.IO.Class
+import Control.Monad.Reader
+import Database.Persist.Postgresql
 import Database.Persist.TH
 
 import Lanthanum.Model.SubmitStatus
@@ -47,6 +46,7 @@ deriveJSON (jsonOptions "problem") ''Problem
 doMigrations :: ReaderT SqlBackend IO ()
 doMigrations = runMigration migrateAll
 
+runDb :: (MonadIO m, MonadReader Config m) => SqlPersistT IO b -> m b
 runDb query = do
     pool <- asks getPool
     liftIO $ runSqlPool query pool
