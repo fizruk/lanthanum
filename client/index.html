@@ -403,7 +403,7 @@ var SolutionUploadForm = React.createClass({
         <div className="form-group" ref="selectForm">
           <span className="btn btn-default btn-file btn-sm">
             <i className="fa fa-upload"></i> Загрузить решение
-            <input type="file" id="inputUploadSolution" onChange={this.handleChange} ref="file" />
+            <input name="file" type="file" id="inputUploadSolution" onChange={this.handleChange} ref="file" />
           </span>
           <small className="help-block">Решение должно быть в файле с расширением <code>.hs</code>.</small>
         </div>
