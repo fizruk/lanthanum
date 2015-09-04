@@ -1,12 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Lanthanum.API where
 
 import Data.Aeson.TH
@@ -21,8 +18,6 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Either
 import Control.Monad.Error.Class
 import Control.Monad.Reader
-import Control.Monad.Trans.Resource
-import Data.ByteString.Lazy (ByteString)
 import Network.Wai
 import Network.Wai.Parse
 import Servant
@@ -34,50 +29,11 @@ import System.IO
 import System.IO.Temp
 import System.Timeout
 
+import Lanthanum.API.Files
 import Lanthanum.Config
 import Lanthanum.Models
 import Lanthanum.Model.SubmitStatus
 import Lanthanum.Utils
-
-data Mem
-data Tmp
-
-class KnownBackend b where
-  type Storage b :: *
-
-  withBackend :: Proxy b -> (BackEnd (Storage b) -> IO r) -> IO r
-
-instance KnownBackend Mem where
-  type Storage Mem = ByteString
-
-  withBackend Proxy f = f lbsBackEnd
-
-instance KnownBackend Tmp where
-  type Storage Tmp = FilePath
-
-  withBackend Proxy f = runResourceT . withInternalState $ \s ->
-    f (tempFileBackEnd s)
-
--- * Files combinator, to get all of the uploaded files
-
-data Files b
-
-type MultiPartData b = ([Param], [File (Storage b)]) 
-
-instance (KnownBackend b, HasServer api) => HasServer (Files b :> api) where
-  type ServerT (Files b :> api) m =
-    MultiPartData b -> ServerT api m
-
-  route Proxy subserver req respond = withBackend pb $ \b -> do
-    dat <- parseRequestBody b req
-    route (Proxy :: Proxy api) (subserver dat) req respond
-
-    where pb = Proxy :: Proxy b
-
-type FilesMem = Files Mem
-type FilesTmp = Files Tmp
-
--- 
 
 type AppM = ReaderT Config (EitherT ServantErr IO)
 

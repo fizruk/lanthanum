@@ -18,6 +18,7 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Lanthanum.API
+    Lanthanum.API.Files
     Lanthanum.Utils
     Lanthanum.Config
     Lanthanum.Models
