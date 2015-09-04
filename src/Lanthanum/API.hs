@@ -9,9 +9,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Lanthanum.API where
 
-import Data.Aeson
 import Data.Aeson.TH
-
 import Data.Monoid
 
 import Data.Text (Text)
@@ -29,7 +27,6 @@ import Network.Wai
 import Network.Wai.Parse
 import Servant
 import Database.Persist.Postgresql
-import Web.PathPieces
 
 import System.Process
 import System.Exit
@@ -41,13 +38,6 @@ import Lanthanum.Config
 import Lanthanum.Models
 import Lanthanum.Model.SubmitStatus
 import Lanthanum.Utils
-
-get404 :: (PersistEntityBackend val ~ SqlBackend, PersistEntity val) => Key val -> AppM val
-get404 key = do
-  m <- runDb $ get key
-  case m of
-    Nothing -> throwError err404
-    Just x  -> return x
 
 data Mem
 data Tmp
@@ -105,11 +95,6 @@ type ProblemSubmitApi
     = "file" :> FilesTmp                 :> Post '[JSON] SubmitId
  :<|> "raw"  :> ReqBody '[JSON] Solution :> Post '[JSON] SubmitId
  :<|> Get '[JSON] [Entity Submit]
-
-instance ToJSON a => ToJSON (Entity a) where
-  toJSON Entity{..} = object
-    [ "id"    .= entityKey
-    , "value" .= entityVal ]
 
 submitServer :: ProblemId -> ServerT ProblemSubmitApi AppM
 submitServer problemId = fileHandler :<|> rawHandler :<|> listHandler
@@ -197,11 +182,6 @@ deriveJSON (jsonOptions "problem") ''ProblemInfo
 type ProblemApi
     = "submit" :> ProblemSubmitApi
  :<|> Get '[JSON] Problem
-
-instance (PathPiece s) => FromText s where
-  fromText = fromPathPiece
-instance (PathPiece s) => ToText s where
-  toText = toPathPiece
 
 problemServer :: ProblemId -> ServerT ProblemApi AppM
 problemServer problemId = submitServer problemId :<|> infoHandler

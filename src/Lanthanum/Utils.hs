@@ -1,8 +1,17 @@
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Lanthanum.Utils where
 
+import Data.Aeson
 import Data.Aeson.TH
 import Data.Char
 import Data.List
+
+import Database.Persist
+import Servant.Common.Text
+import Web.PathPieces
 
 jsonOptions :: String -> Options
 jsonOptions prefix = defaultOptions
@@ -23,4 +32,15 @@ jsonOptions prefix = defaultOptions
       where
         (ls, lrs) = span isLower rs
         (us, urs) = span isUpper rs
+
+instance (PathPiece s) => FromText s where
+  fromText = fromPathPiece
+
+instance (PathPiece s) => ToText s where
+  toText = toPathPiece
+
+instance ToJSON a => ToJSON (Entity a) where
+  toJSON Entity{..} = object
+    [ "id"    .= entityKey
+    , "value" .= entityVal ]
 
