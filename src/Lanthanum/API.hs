@@ -12,6 +12,9 @@ import Data.Monoid
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as Text
+import qualified Data.Text.Encoding as Text
+
+import qualified Data.ByteString.Lazy as BL
 
 import Control.Concurrent
 import Control.Monad.IO.Class
@@ -48,7 +51,7 @@ data Solution = Solution { solutionCode :: Text }
 deriveJSON (jsonOptions "solution") ''Solution
 
 type ProblemSubmitApi
-    = "file" :> FilesTmp                 :> Post '[JSON] SubmitId
+    = "file" :> FilesMem                 :> Post '[JSON] SubmitId
  :<|> "raw"  :> ReqBody '[JSON] Solution :> Post '[JSON] SubmitId
  :<|> Get '[JSON] [Entity Submit]
 
@@ -61,9 +64,10 @@ submitServer problemId = fileHandler :<|> rawHandler :<|> listHandler
     rawHandler :: Solution -> AppM SubmitId
     rawHandler Solution{..} = createSubmit problemId solutionCode
 
-    fileHandler :: MultiPartData Tmp -> AppM SubmitId
+    fileHandler :: MultiPartData Mem -> AppM SubmitId
     fileHandler ([], [(_name, fileinfo)]) = do
-      code <- liftIO $ Text.readFile (fileContent fileinfo)
+      let code = Text.decodeUtf8 (BL.toStrict (fileContent fileinfo))
+      liftIO $ Text.hPutStrLn stderr code
       createSubmit problemId code
     fileHandler _ = throwError err400 -- Bad Request
 
@@ -116,7 +120,6 @@ runTestsFor Problem{..} submitId code = do
       withTempFile "/tmp" "solutionXXX.hs" $ \tmpFile hFile -> do
         -- copy code into a temporary file
         liftIO $ do
-          Text.hPutStrLn hFile "module Solution where"
           Text.hPutStrLn hFile code
           Text.hPutStrLn hFile $ doctestSection "setup"    problemSetup
           Text.hPutStrLn hFile $ doctestSection "examples" problemExamples
