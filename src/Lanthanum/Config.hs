@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Bunny.Config where
+module Lanthanum.Config where
 
 import Network.Wai.Middleware.RequestLogger (logStdoutDev, logStdout)
 import Network.Wai                          (Middleware)
@@ -22,8 +22,9 @@ data Environment =
 
 defaultConfig :: Config
 defaultConfig = Config
-    { getPool = undefined
-    , getEnv  = Development
+    { getPool      = undefined
+    , getEnv       = Development
+    , getClientDir = "."
     }
 
 setLogger :: Environment -> Middleware
@@ -41,4 +42,4 @@ envPool Development = 1
 envPool Production = 8
 
 connStr :: Environment -> ConnectionString
-connStr _ = "host=localhost dbname=bunny user=bunny password=secret port=5432"
+connStr _ = "host=localhost dbname=lanthanum user=lanthanum password=secret port=5432"

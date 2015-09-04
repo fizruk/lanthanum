@@ -7,7 +7,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Bunny.API where
+module Lanthanum.API where
 
 import Data.Aeson
 import Data.Aeson.TH
@@ -39,10 +39,10 @@ import System.IO
 import System.IO.Temp
 import System.Timeout
 
-import Bunny.Config
-import Bunny.Models
-import Bunny.Model.SubmitStatus
-import Bunny.Utils
+import Lanthanum.Config
+import Lanthanum.Models
+import Lanthanum.Model.SubmitStatus
+import Lanthanum.Utils
 
 get404 :: (PersistEntityBackend val ~ SqlBackend, PersistEntity val) => Key val -> AppM val
 get404 key = do
@@ -212,19 +212,19 @@ problemServer problemId = submitServer problemId :<|> infoHandler
     infoHandler :: AppM Problem
     infoHandler = get404 problemId
 
-type BunnyApi
+type LanthanumApi
     = "problem" :> Capture "problem-id" ProblemId :> ProblemApi
 
-server :: ServerT BunnyApi AppM
+server :: ServerT LanthanumApi AppM
 server = problemServer
 
-bunny :: Config -> Application
-bunny cfg = serve api (readerServer cfg :<|> serveDirectory (getClientDir cfg))
+app :: Config -> Application
+app cfg = serve api (readerServer cfg :<|> serveDirectory (getClientDir cfg))
   where
-    api :: Proxy (BunnyApi :<|> Raw)
+    api :: Proxy (LanthanumApi :<|> Raw)
     api = Proxy
 
-readerServer :: Config -> Server BunnyApi
+readerServer :: Config -> Server LanthanumApi
 readerServer cfg = enter (runReaderServer cfg) server
 
 runReaderServer :: e -> ReaderT e m :~> m

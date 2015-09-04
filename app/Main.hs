@@ -7,11 +7,11 @@ import Database.Persist.Postgresql (runSqlPool)
 import Text.Read (readMaybe)
 import Data.Maybe (fromMaybe)
 
-import Bunny.Config
-import Bunny.API (bunny)
-import Bunny.Models (doMigrations)
+import Lanthanum.Config
+import Lanthanum.API (app)
+import Lanthanum.Models (doMigrations)
 
-import Paths_bunny_server
+import Paths_lanthanum
 
 main :: IO ()
 main = do
@@ -22,7 +22,7 @@ main = do
     let cfg = defaultConfig { getPool = pool, getEnv = env, getClientDir = clientDir }
         logger = setLogger env
     runSqlPool doMigrations pool
-    run port $ logger $ bunny cfg
+    run port $ logger $ app cfg
 
 lookupSetting :: Read a => String -> a -> IO a
 lookupSetting env def = do

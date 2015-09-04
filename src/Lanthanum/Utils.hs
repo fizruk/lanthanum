@@ -1,4 +1,4 @@
-module Bunny.Utils where
+module Lanthanum.Utils where
 
 import Control.Arrow (first)
 

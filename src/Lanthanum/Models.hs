@@ -10,7 +10,7 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE DeriveGeneric              #-}
 
-module Bunny.Models where
+module Lanthanum.Models where
 
 import Data.Aeson.TH
 import Data.Text (Text)
@@ -20,10 +20,10 @@ import Database.Persist.Postgresql (SqlBackend(..), runMigration,
                                     runSqlPool)
 import Database.Persist.TH
 
-import Bunny.Model.SubmitStatus
+import Lanthanum.Model.SubmitStatus
 
-import Bunny.Config
-import Bunny.Utils
+import Lanthanum.Config
+import Lanthanum.Utils
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Submit

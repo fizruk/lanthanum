@@ -10,11 +10,11 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE DeriveGeneric              #-}
 
-module Bunny.Model.SubmitStatus where
+module Lanthanum.Model.SubmitStatus where
 
 import Data.Aeson.TH
 import Database.Persist.TH
-import Bunny.Utils
+import Lanthanum.Utils
 
 data SubmitStatus
   = SubmitAccepted
